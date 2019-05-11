@@ -1,5 +1,5 @@
 import uuid from 'uuid';
-import database from '../firebase/firebase'
+import database from '../firebase/firebase';
 
 // ADD_EXPENSE
 export const addExpense = (expense) => ({
@@ -15,18 +15,16 @@ export const startAddExpense = (expenseData = {}) => {
       amount = 0,
       createdAt = 0
     } = expenseData;
+    const expense = { description, note, amount, createdAt };
 
-    const expense = {description, note, amount, createdAt}
-    
-    return database.ref('expenses').push(expense)
-      .then((ref) => {
-        dispatch(addExpense({
-          id: ref.key,
-          ...expense
-        }))
-      })
-  }
-}
+    return database.ref('expenses').push(expense).then((ref) => {
+      dispatch(addExpense({
+        id: ref.key,
+        ...expense
+      }));
+    });
+  };
+};
 
 // REMOVE_EXPENSE
 export const removeExpense = ({ id } = {}) => ({
@@ -34,13 +32,13 @@ export const removeExpense = ({ id } = {}) => ({
   id
 });
 
-export const startRemoveExpense = ({id} = {}) => {
+export const startRemoveExpense = ({ id } = {}) => {
   return (dispatch) => {
     return database.ref(`expenses/${id}`).remove().then(() => {
-      dispatch(removeExpense({ id }))
-    })
-  }
-}
+      dispatch(removeExpense({ id }));
+    });
+  };
+};
 
 // EDIT_EXPENSE
 export const editExpense = (id, updates) => ({
@@ -49,13 +47,20 @@ export const editExpense = (id, updates) => ({
   updates
 });
 
-//SET_EXPENSES
+export const startEditExpense = (id, updates) => {
+  return (dispatch) => {
+    return database.ref(`expenses/${id}`).update(updates).then(() => {
+      dispatch(editExpense(id, updates));
+    });
+  };
+};
+
+// SET_EXPENSES
 export const setExpenses = (expenses) => ({
   type: 'SET_EXPENSES',
   expenses
-})
+});
 
-//async action to fetch data before displaying with SET_EXPENSES
 export const startSetExpenses = () => {
   return (dispatch) => {
     return database.ref('expenses').once('value').then((snapshot) => {
@@ -63,13 +68,12 @@ export const startSetExpenses = () => {
 
       snapshot.forEach((childSnapshot) => {
         expenses.push({
-          id:childSnapshot.key,
+          id: childSnapshot.key,
           ...childSnapshot.val()
-        })
+        });
       });
 
-      dispatch(setExpenses(expenses))
-    })
-  }
-}
-
+      dispatch(setExpenses(expenses));
+    });
+  };
+};
